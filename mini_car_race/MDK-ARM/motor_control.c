@@ -30,7 +30,7 @@
 #define SPEED_I_MAX         400.0f     // 速度积分限幅
 
 // 目标速度设置
-#define TARGET_SPEED        100.0f     // 基础目标速度（根据实际调整）
+#define TARGET_SPEED        300.0f     // 基础目标速度（根据实际调整）
 
 // PWM输出限制
 #define PWM_MAX             3600       // PWM最大值
@@ -41,7 +41,9 @@
 #define PWM_QianKui 0
 float n=0;
 float l_about=0;
+float r_about=0;
 int times=0;
+int flag = 0;//0不输出，1左，2右
 /* ==================== 数据结构 ==================== */
 
 // PID控制器结构体
@@ -252,8 +254,9 @@ int16_t pi_calculate(PID_Controller_t *controller, float setpoint, float measure
  */
 void cascade_pid_control(uint16_t mux_value, float gyro_z, 
                          float left_encoder, float right_encoder) {
-												 
-    times++;
+	if(times<510&&((left_encoder!=0)||(right_encoder!=0))){										 
+		times++;
+	}
     /* ========== 第一级：转向环PD控制 ========== */
     // 计算赛道位置偏差
     float line_position = calculate_line_position(mux_value);
@@ -286,13 +289,29 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z,
                                           motor_right.target_speed, 
                                           motor_right.current_speed);
     constrain(motor_right.pwm_output,PWM_MIN,PWM_MAX);
+	if(flag==0){
+		printf("%f,%f,%f\r\n", motor_left.current_speed ,motor_right.current_speed, motor_left.target_speed );
+	}
+	if(flag==1){
 		if(times>500){
-			if(left_encoder!=0){
+			if(left_encoder>20||left_encoder<-20){
 					n++;
 					l_about = l_about * (n-1) / n + left_encoder / n ; 
+			}
+			
 		}
-			printf("%f,%f,%f\r\n", motor_right.current_speed , motor_right.target_speed ,l_about);
-
+		printf("%f,%f,%f\r\n", motor_left.current_speed ,l_about, motor_left.target_speed );
+	}
+	if(flag==2){
+		if(times>500){
+			if(right_encoder>20||right_encoder<-20){
+					n++;
+					r_about = r_about * (n-1) / n + right_encoder / n ; 
+			}
+			
+		}
+		printf("%f,%f,%f\r\n", motor_right.current_speed ,motor_right.target_speed ,r_about);
+	}
 		//printf("%d\n",motor_left.pwm_output);
 		//printf("%d\n",motor_right.pwm_output);
     /* ========== PWM输出 ========== */
@@ -316,7 +335,7 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z,
            motor_left.pwm_output, motor_right.pwm_output);
     #endif
 }
-}
+
 
 
 /* ==================== PID参数调整函数 ==================== */
