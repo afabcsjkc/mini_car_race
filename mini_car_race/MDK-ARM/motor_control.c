@@ -23,8 +23,10 @@
 #define GYRO_I_MAX          100.0f     // 角速度积分限幅
 
 // 速度环PI参数（目标速度 -> PWM输出）
-#define SPEED_KP            4.0f       // 速度比例系数
-#define SPEED_KI            0.0f       // 速度积分系数
+#define L_SPEED_KP            4.0f       // 速度比例系数
+#define L_SPEED_KI            0.0f       // 速度积分系数
+#define R_SPEED_KP            4.0f       // 速度比例系数
+#define R_SPEED_KI            0.0f       // 速度积分系数
 #define SPEED_I_MAX         500.0f     // 速度积分限幅
 
 // 目标速度设置
@@ -80,8 +82,8 @@ PID_Controller_t gyro_pid = {
 // 左右电机
 Motor_t motor_left = {
     .speed_pid = {
-        .kp = SPEED_KP,
-        .ki = SPEED_KI,
+        .kp = L_SPEED_KP,
+        .ki = L_SPEED_KI,
         .kd = 0.0f,
         .integral_max = SPEED_I_MAX
     }
@@ -89,8 +91,8 @@ Motor_t motor_left = {
 
 Motor_t motor_right = {
     .speed_pid = {
-        .kp = SPEED_KP,
-        .ki = SPEED_KI,
+        .kp = R_SPEED_KP,
+        .ki = R_SPEED_KI,
         .kd = 0.0f,
         .integral_max = SPEED_I_MAX
     }
