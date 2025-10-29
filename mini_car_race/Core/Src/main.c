@@ -92,6 +92,7 @@ if (htim == &htim2) {
     // 读取陿螺仪数据
     dodo_BMI270_get_data();
     gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
+	//printf("%f\r\n",gyro_z);
     if(a==10)    
 		{	// 读取编码器鿟度
 			left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
@@ -157,6 +158,8 @@ reset_all_pid();
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	HAL_Delay(1000);
+	
   while (1)
   {
     /* USER CODE END WHILE */

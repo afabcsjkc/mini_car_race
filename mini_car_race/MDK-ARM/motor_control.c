@@ -17,24 +17,26 @@
 #define STEERING_KD         3.0f       // 位置微分系数
 
 // 角速度环PID参数（目标角速度 -> 左右轮差速）
-#define GYRO_KP             8.0f       // 角速度比例系数
-#define GYRO_KI             0.5f       // 角速度积分系数
+#define GYRO_KP             50.0f       // 角速度比例系数
+#define GYRO_KI             1.1f       // 角速度积分系数
 #define GYRO_KD             0.0f       // 角速度微分系数
 #define GYRO_I_MAX          100.0f     // 角速度积分限幅
 
 // 速度环PI参数（目标速度 -> PWM输出）
-#define L_SPEED_KP            14.5f       // 左电机速度比例系数
-#define L_SPEED_KI            0.3f       // 左电机速度积分系数
-#define R_SPEED_KP            14.5f       // 右电机速度比例系数
-#define R_SPEED_KI            0.3f       // 右电机速度积分系数
+#define L_SPEED_KP            10.5f       // 左电机速度比例系数
+#define L_SPEED_KI            0.2f       // 左电机速度积分系数
+#define R_SPEED_KP            10.0f       // 右电机速度比例系数
+#define R_SPEED_KI            0.8f       // 右电机速度积分系数
+#define R_SPEED_KD						13
+//右电机速度导数系数
 #define SPEED_I_MAX         400.0f     // 速度积分限幅
 
 // 目标速度设置
 #define TARGET_SPEED        300.0f     // 基础目标速度（根据实际调整）
 
 // PWM输出限制
-#define PWM_MAX             3600       // PWM最大值
-#define PWM_MIN             -3600      // PWM最小值（反转）
+#define PWM_MAX             1800       // PWM最大值
+#define PWM_MIN             -1800      // PWM最小值（反转）
 #define PWM_DEADZONE        50         // PWM死区
 
 // PWM前馈值
@@ -43,7 +45,7 @@ float n=0;
 float l_about=0;
 float r_about=0;
 int times=0;
-int flag = 0;//0不输出，1左，2右
+int flag = -1;//0不输出，1左，2右
 /* ==================== 数据结构 ==================== */
 
 // PID控制器结构体
@@ -99,7 +101,7 @@ Motor_t motor_right = {
     .speed_pid = {
         .kp = R_SPEED_KP,
         .ki = R_SPEED_KI,
-        .kd = 0.0f,
+        .kd = R_SPEED_KD,
         .integral_max = SPEED_I_MAX
     }
 };
@@ -142,7 +144,7 @@ float calculate_line_position(uint16_t mux_value) {
     }
     
     // 返回平均位置偏差
-    return weighted_sum / active_count;
+    return weighted_sum / active_count ;
 }
 
 
@@ -185,9 +187,9 @@ float pid_calculate(PID_Controller_t *controller, float setpoint, float measurem
     
     // 积分累加
     controller->integral += error;
-    controller->integral = constrain(controller->integral, 
-                                     -controller->integral_max, 
-                                     controller->integral_max);
+//    controller->integral = constrain(controller->integral, 
+//                                     -controller->integral_max, 
+//                                     controller->integral_max);
     
     // 计算微分
     float derivative = error - controller->last_error;
@@ -262,19 +264,19 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z,
     float line_position = calculate_line_position(mux_value);
     
     // PD控制计算目标角速度（位置偏差 -> 目标角速度）
-    //float target_angular_velocity = pd_calculate(&steering_pd, 0.0f, line_position);
+    float target_angular_velocity = pd_calculate(&steering_pd, 0.0f, line_position);
     
-    
+   // float target_angular_velocity = 10;
     /* ========== 第二级：角速度环PID控制 ========== */
     // PID控制计算左右轮差速（目标角速度 -> 差速值）
-    //float differential_speed = pid_calculate(&gyro_pid, target_angular_velocity, gyro_z);
+    float differential_speed = pid_calculate(&gyro_pid, target_angular_velocity, gyro_z);
     
     
     /* ========== 第三级：速度环PI控制 ========== */
     // 计算左右电机目标速度
-    motor_left.target_speed = TARGET_SPEED ;
-    motor_right.target_speed = TARGET_SPEED ;//+ differential_speed;
-    
+    motor_left.target_speed = TARGET_SPEED - differential_speed;
+    motor_right.target_speed = TARGET_SPEED + differential_speed;
+    //printf("%f,%f\r\n", motor_left.target_speed, motor_right.target_speed);
     // 更新当前速度（从编码器读取）
     motor_left.current_speed = left_encoder;
     motor_right.current_speed = right_encoder;
@@ -285,14 +287,14 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z,
                                          motor_left.current_speed);
     constrain(motor_left.pwm_output,PWM_MIN,PWM_MAX);
     // 右电机PI控制
-    motor_right.pwm_output = pi_calculate(&motor_right.speed_pid, 
+    motor_right.pwm_output = pid_calculate(&motor_right.speed_pid, 
                                           motor_right.target_speed, 
                                           motor_right.current_speed);
     constrain(motor_right.pwm_output,PWM_MIN,PWM_MAX);
 	if(flag==0){
 		printf("%f,%f,%f\r\n", motor_left.current_speed ,motor_right.current_speed, motor_left.target_speed );
 	}
-	if(flag==1){
+	else if(flag==1){
 		if(times>500){
 			if(left_encoder>20||left_encoder<-20){
 					n++;
@@ -302,7 +304,7 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z,
 		}
 		printf("%f,%f,%f\r\n", motor_left.current_speed ,l_about, motor_left.target_speed );
 	}
-	if(flag==2){
+	else if(flag==2){
 		if(times>500){
 			if(right_encoder>20||right_encoder<-20){
 					n++;
@@ -315,19 +317,14 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z,
 		//printf("%d\n",motor_left.pwm_output);
 		//printf("%d\n",motor_right.pwm_output);
     /* ========== PWM输出 ========== */
-    if (motor_left.pwm_output >= 0) {
-			
-				TIM1->CCR1 = motor_left.pwm_output + PWM_QianKui, HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
-		} 
-		else {
-				TIM1->CCR1 = -motor_left.pwm_output + PWM_QianKui, HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
-		}
+//
+	
 		if (motor_right.pwm_output >= 0) {
-				TIM1->CCR2 = motor_right.pwm_output, HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+				TIM1->CCR2 = motor_right.pwm_output + PWM_QianKui, HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
 		} 
 		else {
-				TIM1->CCR2 = -motor_right.pwm_output, HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-		}
+				TIM1->CCR2 = -motor_right.pwm_output + PWM_QianKui, HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+		} 
     /* ========== 调试输出（可选） ========== */
     #ifdef DEBUG_PID
     printf("LinePos:%.2f, TargetGyro:%.2f, Gyro:%.2f, Diff:%.2f, L:%d, R:%d\n",
