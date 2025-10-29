@@ -3,7 +3,7 @@
 <title>Static Call Graph - [micro_smartcar\micro_smartcar.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image micro_smartcar\micro_smartcar.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Wed Oct 29 18:35:41 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6180002: Last Updated: Wed Oct 29 20:08:22 2025
 <BR><P>
 <H3>Maximum Stack Usage =        744 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -264,7 +264,7 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[47]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
 </UL>
 
-<P><STRONG><a name="[b4]"></a>__aeabi_fmul</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, fmul.o(.text))
+<P><STRONG><a name="[b2]"></a>__aeabi_fmul</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, fmul.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = __aeabi_fmul
 </UL>
 <BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cascade_pid_control
@@ -275,7 +275,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[49]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_float_round
 </UL>
-<BR>[Called By]<UL><LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PeriodElapsedCallback
+<BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cascade_pid_control
+<LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PeriodElapsedCallback
 <LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;calculate_line_position
 </UL>
 
@@ -283,7 +284,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cascade_pid_control
 </UL>
 
-<P><STRONG><a name="[b2]"></a>__aeabi_fcmpgt</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, fcmpgt.o(.text))
+<P><STRONG><a name="[b6]"></a>__aeabi_fcmpeq</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, fcmpeq.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cascade_pid_control
 </UL>
 
@@ -303,7 +304,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;calculate_line_position
 </UL>
 
-<P><STRONG><a name="[b6]"></a>__aeabi_f2iz</STRONG> (Thumb, 50 bytes, Stack size 0 bytes, ffixi.o(.text))
+<P><STRONG><a name="[b5]"></a>__aeabi_f2iz</STRONG> (Thumb, 50 bytes, Stack size 0 bytes, ffixi.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cascade_pid_control
 </UL>
 
@@ -383,7 +384,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[c9]"></a>__ARM_fcmp4</STRONG> (Thumb, 54 bytes, Stack size 0 bytes, fcmp4.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fminf
+<BR><BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fminf
 </UL>
 
 <P><STRONG><a name="[d4]"></a>_fcmp4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, fcmp4.o(.text), UNUSED)
@@ -1161,19 +1162,20 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cascade_pid_control
 </UL>
 
-<P><STRONG><a name="[83]"></a>cascade_pid_control</STRONG> (Thumb, 540 bytes, Stack size 48 bytes, motor_control.o(.text.cascade_pid_control))
-<BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = cascade_pid_control &rArr; calculate_line_position &rArr; __aeabi_fadd &rArr; _float_epilogue
+<P><STRONG><a name="[83]"></a>cascade_pid_control</STRONG> (Thumb, 524 bytes, Stack size 64 bytes, motor_control.o(.text.cascade_pid_control))
+<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = cascade_pid_control &rArr; calculate_line_position &rArr; __aeabi_fadd &rArr; _float_epilogue
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
-<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fminf
+<LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
+<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fminf
 <LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
-<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
-<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fmul
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmpeq
+<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
+<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fmul
 <LI><a href="#[4a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fsub
 <LI><a href="#[47]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
 <LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;calculate_line_position
 <LI><a href="#[b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmplt
-<LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fcmpgt
 <LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PeriodElapsedCallback
@@ -1257,7 +1259,7 @@ Global Symbols
 
 <P><STRONG><a name="[de]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 
-<P><STRONG><a name="[b5]"></a>fminf</STRONG> (Thumb, 40 bytes, Stack size 16 bytes, fminf.o(i.fminf))
+<P><STRONG><a name="[b4]"></a>fminf</STRONG> (Thumb, 40 bytes, Stack size 16 bytes, fminf.o(i.fminf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = fminf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__ARM_fcmp4

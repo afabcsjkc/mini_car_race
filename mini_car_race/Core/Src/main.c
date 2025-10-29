@@ -83,6 +83,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 if (htim == &htim2) {
 	a++;
 	uint16_t mux_value;
+	int n;
     float gyro_z;
     float left_encoder_speed;   
     float right_encoder_speed;  
@@ -100,6 +101,7 @@ if (htim == &htim2) {
 //			printf("r=%f\n",right_encoder_speed);
 			__HAL_TIM_SET_COUNTER(&htim3, 0);
 			a=0;
+
 		}			
     // 执行串级PID控制
     cascade_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
