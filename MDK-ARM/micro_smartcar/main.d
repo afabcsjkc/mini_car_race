@@ -24,4 +24,5 @@ micro_smartcar/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
   ..\Core\code\dodo_BMI270.h ..\Core\code\bmi270_port.h \
   ..\Core\code\bmi270.h ..\Core\code\bmi2.h ..\Core\code\bmi2_defs.h \
-  ..\Core\code\multiplexer.h ..\Core\code\motor_control.h
+  ..\Core\code\multiplexer.h ..\Core\code\motor_control.h \
+  ..\Core\code\my_math.h

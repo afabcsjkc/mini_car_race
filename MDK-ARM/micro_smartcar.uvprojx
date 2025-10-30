@@ -81,7 +81,7 @@
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>0</RunUserProg1>
-            <RunUserProg2>1</RunUserProg2>
+            <RunUserProg2>0</RunUserProg2>
             <UserProg1Name></UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Core/code</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../Core/code;..\MDK-ARM</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -565,24 +565,24 @@
               <FilePath>..\Core\code\multiplexer.c</FilePath>
             </File>
             <File>
-              <FileName>motor_control.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\motor_control.h</FilePath>
-            </File>
-            <File>
               <FileName>motor_control.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\motor_control.c</FilePath>
+              <FilePath>..\Core\code\motor_control.c</FilePath>
             </File>
             <File>
-              <FileName>my_math.h</FileName>
+              <FileName>motor_control.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\my_math.h</FilePath>
+              <FilePath>..\Core\code\motor_control.h</FilePath>
             </File>
             <File>
               <FileName>my_math.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\my_math.c</FilePath>
+              <FilePath>..\Core\code\my_math.c</FilePath>
+            </File>
+            <File>
+              <FileName>my_math.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Core\code\my_math.h</FilePath>
             </File>
           </Files>
         </Group>

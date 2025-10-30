@@ -1,4 +1,4 @@
-micro_smartcar/motor_control.o: motor_control.c \
+micro_smartcar/motor_control.o: ..\Core\code\motor_control.c \
   ..\Core\code\dodo_BMI270.h ..\Core\code\bmi270_port.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
   ..\Core\Inc\stm32f1xx_hal_conf.h \
@@ -24,5 +24,5 @@ micro_smartcar/motor_control.o: motor_control.c \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
   ..\Core\code\bmi270.h ..\Core\code\bmi2.h ..\Core\code\bmi2_defs.h \
-  ..\Core\code\multiplexer.h ..\Core\Inc\main.h motor_control.h \
-  my_math.h
+  ..\Core\code\multiplexer.h ..\Core\Inc\main.h \
+  ..\Core\code\motor_control.h ..\Core\code\my_math.h

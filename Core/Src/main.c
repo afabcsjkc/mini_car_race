@@ -80,34 +80,33 @@ int fputc(int ch, FILE *f)
 }
 int a=0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-if (htim == &htim2) {
-	a++;
-	uint16_t mux_value;
-	int n;
-    float gyro_z;
-    float left_encoder_speed;   
-    float right_encoder_speed;  
-    MUX_get_value(&mux_value);
-        
-    // 读取陿螺仪数据
-    dodo_BMI270_get_data();
-    gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
-	//printf("%f\r\n",gyro_z);
-    if(a==10)    
-		{	// 读取编码器鿟度
-			left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
-//			printf("l=%f\n",left_encoder_speed);
-			__HAL_TIM_SET_COUNTER(&htim4, 0);
-			right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
-//			printf("r=%f\n",right_encoder_speed);
-			__HAL_TIM_SET_COUNTER(&htim3, 0);
-			a=0;
+	if (htim == &htim2) {
+		a++;
+		uint16_t mux_value;
+		int n;
+		float gyro_z;
+		float left_encoder_speed;   
+		float right_encoder_speed;  
+		MUX_get_value(&mux_value);
+			
+		// 读取陿螺仪数据
+		dodo_BMI270_get_data();
+		gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
+		//printf("%f\r\n",gyro_z);
+		if(a==10)    
+			{	// 读取编码器鿟度
+				left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
+	//			printf("l=%f\n",left_encoder_speed);
+				__HAL_TIM_SET_COUNTER(&htim4, 0);
+				right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
+	//			printf("r=%f\n",right_encoder_speed);
+				__HAL_TIM_SET_COUNTER(&htim3, 0);
+				a=0;
 
-		}			
-    // 执行串级PID控制
-    cascade_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
-
-}
+			}			
+		// 执行串级PID控制
+		master_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
+	}
 }
 /* USER CODE END 0 */
 
@@ -147,18 +146,19 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-dodo_BMI270_init();//初始化陀螺仪
-HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
-HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-HAL_TIM_Base_Start_IT(&htim2);
-reset_all_pid();
+	HAL_Delay(1000);
+	dodo_BMI270_init();//初始化陀螺仪
+	HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	HAL_TIM_Base_Start_IT(&htim2);
+	reset_all_pid();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	HAL_Delay(1000);
+	
 	
   while (1)
   {
