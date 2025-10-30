@@ -38,7 +38,7 @@
 #define SPEED_I_MAX         400.0f     // 速度积分限幅
 
 // 目标速度设置
-#define TARGET_SPEED        100.0f     // 基础目标速度（根据实际调整）
+#define TARGET_SPEED        150.0f     // 基础目标速度（根据实际调整）
 
 // PWM输出限制
 #define PWM_MAX             1000       // PWM最大值
@@ -49,6 +49,7 @@
 #define PWM_QianKui 0
 
 // 过弯减速系数
+#define PWM_GuoWanEnble		0			//是否开启过弯减速，为0关闭，为1开启	
 #define PWM_GuoWanXiShu		0.5			//过弯减速系数
 #define PWM_GuoWanYuZhi		10			//光电管过弯判断阈值
 
@@ -144,6 +145,21 @@ float constrain(float value, float min_val, float max_val) {
     if (value > max_val) return max_val;
     if (value < min_val) return min_val;
     return value;
+}
+
+/**
+* @brief 小车状态机判断函数
+ * @param mux_value 光电管数据
+ * @param gyro_z Z轴角速度（度/秒）
+ * @param left_encoder 左轮编码器速度
+ * @param right_encoder 右轮编码器速度
+* @return 小车状态机condition_flag
+ */
+uint8_t condition_check(uint16_t mux_value, float gyro_z, float left_encoder, float right_encoder)
+{
+	//还没写
+	
+	return 0;
 }
 
 /**
@@ -371,9 +387,15 @@ void cascade_pid_control(uint16_t mux_value, float gyro_z, float left_encoder, f
     
     /* ========== 第三级：速度环PI控制 ========== */
     // 计算左右电机目标速度
-	if()
-    motor_left.target_speed = TARGET_SPEED * PWM_GuoWanXiShu - differential_speed;
-    motor_right.target_speed = TARGET_SPEED * PWM_GuoWanXiShu + differential_speed;
+	if(condition_flag == 0){
+		motor_left.target_speed = TARGET_SPEED - differential_speed;
+		motor_right.target_speed = TARGET_SPEED + differential_speed;
+	}
+	else if(condition_flag == 0){
+		motor_left.target_speed = TARGET_SPEED * PWM_GuoWanXiShu - differential_speed;
+		motor_right.target_speed = TARGET_SPEED * PWM_GuoWanXiShu + differential_speed;
+	}
+
     //printf("%f,%f\r\n", motor_left.target_speed, motor_right.target_speed);
     // 更新当前速度（从编码器读取）
     motor_left.current_speed = left_encoder;
@@ -460,6 +482,10 @@ void parallel_pid_control(uint16_t mux_value, float gyro_z, float left_encoder, 
  * @param right_encoder 右轮编码器速度
  */
 void master_pid_control(uint16_t mux_value, float gyro_z, float left_encoder, float right_encoder) {
+	  
+	  if(PWM_GuoWanEnble != 0){
+		  condition_flag = condition_check(mux_value, gyro_z, left_encoder, right_encoder);
+	  }
 	  if(PID_Mode == 0){
 		cascade_pid_control(mux_value, gyro_z, left_encoder, right_encoder);
 	  }
