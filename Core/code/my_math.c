@@ -8,13 +8,13 @@
  * @param total 	 参与计算的数据数目
  * @return now_about 新的平均值
  */
-float my_about(float last_about, float data, uint16_t* total)
+float my_about(float last_about, float data, uint16_t total)
 {
 	float now_about;
 	
 	//计算新的平均值
-	(*total)++;
-	now_about = last_about * (*total-1) / *total + data / *total ; 
+	(total)++;
+	now_about = last_about * (total-1) / total + data / total ; 
 
 	return now_about;
 }
@@ -36,4 +36,26 @@ float my_abs(float data)
 	}
 
 	return result;
+}
+
+float my_pow(float data, int n)
+{
+	float temp = data;
+	for( ; n > 1 ; n /= 2)
+	{
+		data = data * data;
+	}
+	if(n == 1)
+	{
+		data *= temp;
+	}
+	return data;
+}
+
+float my_variance(float last_variance, float data, float about, uint16_t total )
+{
+	float now_variance;
+	(total)++;
+	now_variance = (last_variance * (total-1) + my_pow(data - about, 2)) / total; 
+	return now_variance;
 }
