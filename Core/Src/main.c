@@ -80,8 +80,10 @@ int fputc(int ch, FILE *f)
   return ch;
 }
 int a=0;
+uint16_t times = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim == &htim2) {
+		times++;
 		a++;
 		uint16_t mux_value;
 		int n;
@@ -93,18 +95,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		// 读取陿螺仪数据
 		dodo_BMI270_get_data();
 		gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
-		//printf("%f\r\n",gyro_z);
-		if(a==10)    
-			{	// 读取编码器鿟度
-				left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
+		//printf("%f\r\n",gyro_z); 
+		// 读取编码器鿟度
+		left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
 	//			printf("l=%f\n",left_encoder_speed);
-				__HAL_TIM_SET_COUNTER(&htim4, 0);
-				right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
+		__HAL_TIM_SET_COUNTER(&htim4, 0);
+		right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
 	//			printf("r=%f\n",right_encoder_speed);
-				__HAL_TIM_SET_COUNTER(&htim3, 0);
-				a=0;
-
-			}			
+		__HAL_TIM_SET_COUNTER(&htim3, 0);			
 		// 执行串级PID控制
 		master_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
 	}
