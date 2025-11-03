@@ -24,7 +24,7 @@ void tune_pid_parameters(float steer_kp, float steer_kd,
                          float speed_kp, float speed_ki);
 void reset_all_pid(void);
 
-						 
+extern int run_times ;			 
 /* 辅助函数 */
 float calculate_line_position(uint16_t mux_value);
 

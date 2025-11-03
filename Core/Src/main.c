@@ -79,10 +79,41 @@ int fputc(int ch, FILE *f)
   HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xffff);
   return ch;
 }
-int a=0;
+
+void CeShi(void)
+{
+	uint32_t temp1 = __HAL_TIM_GET_COUNTER(&htim2);
+	
+	uint16_t mux_value;
+	int n;
+	float gyro_z;
+	float left_encoder_speed;   
+	float right_encoder_speed;  
+	MUX_get_value(&mux_value);
+		
+	// 读取陿螺仪数据
+	dodo_BMI270_get_data();
+	gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
+	//printf("%f\r\n",gyro_z);    
+	// 读取编码器鿟度
+	left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
+//	printf("l=%f\n",left_encoder_speed);
+	__HAL_TIM_SET_COUNTER(&htim4, 0);
+	right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
+//	printf("r=%f\n",right_encoder_speed);
+	__HAL_TIM_SET_COUNTER(&htim3, 0);
+	// 执行串级PID控制
+	master_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
+	uint32_t temp2 = __HAL_TIM_GET_COUNTER(&htim2);
+	for(uint8_t i = 0; i < 100; i++)
+	{
+		printf("1111\n");
+	}
+	printf("%d", (temp2 - temp1));
+	
+}
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim == &htim2) {
-		a++;
 		uint16_t mux_value;
 		int n;
 		float gyro_z;
@@ -93,18 +124,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		// 读取陿螺仪数据
 		dodo_BMI270_get_data();
 		gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
-		//printf("%f\r\n",gyro_z);
-		if(a==10)    
-			{	// 读取编码器鿟度
-				left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
-	//			printf("l=%f\n",left_encoder_speed);
-				__HAL_TIM_SET_COUNTER(&htim4, 0);
-				right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
-	//			printf("r=%f\n",right_encoder_speed);
-				__HAL_TIM_SET_COUNTER(&htim3, 0);
-				a=0;
-
-			}			
+		//printf("%f\r\n",gyro_z);    
+		// 读取编码器鿟度
+		left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
+	//	printf("l=%f\n",left_encoder_speed);
+		__HAL_TIM_SET_COUNTER(&htim4, 0);
+		right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
+	//	printf("r=%f\n",right_encoder_speed);
+		__HAL_TIM_SET_COUNTER(&htim3, 0);
 		// 执行串级PID控制
 		master_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
 	}
@@ -154,13 +181,17 @@ int main(void)
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIM_Base_Start_IT(&htim2);
-	reset_all_pid();
+	//TIM2->ARR = 999;
   /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+//	if(run_times>5000){
+//		HAL_TIM_Base_Stop_IT(&htim2);
+//		HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
+//	}
+	printf("111");
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
   }
