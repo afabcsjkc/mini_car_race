@@ -1,6 +1,10 @@
 #include "multiplexer.h"
 #include "bmi270_port.h"
 
+static void Delay_100ns(void){
+	__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
+}
+
 /**
  * @brief 精确微秒延时函数 (基于 DWT)
  * @param period : 延时周期，单位微秒
@@ -47,7 +51,8 @@ void MUX_get_value(uint16_t *value){
     *value=0;
     for(int16_t i=0;i<MULTIPLEXER_CHANNEL_NUM;i++){
         multiplexer_set_channel(i);
-        multiplexer_delay_us(1,NULL);
+        Delay_100ns();
+		Delay_100ns();
         if(HAL_GPIO_ReadPin(MULTIPLEXER_READ_PORT,MULTIPLEXER_READ_PIN)==GPIO_PIN_SET){
             (*value)+=(1<<(MULTIPLEXER_CHANNEL_NUM-i-1));
         }

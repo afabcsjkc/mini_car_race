@@ -21,8 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "dodo_BMI270.h" //�?螺仪驱动
-#include "multiplexer.h"//多路复用器驱动，用于读取光电管读�?
+#include "dodo_BMI270.h" //螺仪驱动
+#include "multiplexer.h"//多路复用器驱动，用于读取光电管
 #include "stdio.h"
 #include "motor_control.h"
 #include "my_math.h"
@@ -30,6 +30,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#define Control_Frequency 200
+#define Sample_Frequency  2000
 
 /* USER CODE END PTD */
 
@@ -55,7 +57,15 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+uint16_t mux_value;
+uint16_t mux_value_raw[Sample_Frequency / Control_Frequency];
 
+float gyro_z;
+float left_encoder_speed;   
+float right_encoder_speed;  
+uint8_t control_flag = 0;
+uint8_t sample_flag = 0;
+uint8_t print_flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,66 +84,86 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int fputc(int ch, FILE *f)
-{
+
+int fputc(int ch, FILE *f){
   HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xffff);
   return ch;
 }
+uint8_t index = 0;
+void UpdataMux(void){
 
-void CeShi(void)
-{
-	uint32_t temp1 = __HAL_TIM_GET_COUNTER(&htim2);
-	
-	uint16_t mux_value;
-	int n;
-	float gyro_z;
-	float left_encoder_speed;   
-	float right_encoder_speed;  
-	MUX_get_value(&mux_value);
-		
+	//获得光电管数据
+  MUX_get_value(&mux_value_raw[index]);
+  index++;
+  if(index >= 10){
+    index = 0;
+	control_flag = 1;
+
+  }
+}
+
+// @brief 更新状态数据
+void UpdataData(void){
+
 	// 读取陿螺仪数据
 	dodo_BMI270_get_data();
 	gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
-	//printf("%f\r\n",gyro_z);    
 	// 读取编码器鿟度
-	left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
-//	printf("l=%f\n",left_encoder_speed);
+	left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4) * 5;
 	__HAL_TIM_SET_COUNTER(&htim4, 0);
-	right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
-//	printf("r=%f\n",right_encoder_speed);
+	right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3) * 5;
 	__HAL_TIM_SET_COUNTER(&htim3, 0);
-	// 执行串级PID控制
-	master_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
-	uint32_t temp2 = __HAL_TIM_GET_COUNTER(&htim2);
-	for(uint8_t i = 0; i < 100; i++)
-	{
-		printf("1111\n");
-	}
-	printf("%d", (temp2 - temp1));
-	
 }
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+uint16_t median_filter(uint16_t* mux_value_raw){
+	uint16_t mux_value_filtered = 0;
+	uint8_t count_ones[12] = {0};	
+	for (uint8_t i = 0; i < Sample_Frequency / Control_Frequency; i++) {
+		uint16_t current_value = mux_value_raw[i];
+		for (uint8_t k = 0; k < 12; k++) {
+			// 检查第 k 位是否为 1
+			if (MUX_GET_CHANNEL(current_value, k)) {
+				count_ones[k]++;
+			}
+		}
+	}
+	
+	const uint8_t MEDIAN_THRESHOLD = 5; 
+	for (uint8_t k = 0; k < 12; k++) {
+		// 如果第 k 路有 5 个或更多的 1，则中值取 1
+		if (count_ones[k] >= MEDIAN_THRESHOLD) {
+			// 将第 k 位设置为 1
+			mux_value_filtered |= (0x01 << (11 - k));
+		}
+	}
+	return mux_value_filtered;
+}
+
+// @brief 测试函数······计算执行一次循环的时间
+void CeShi(void)
+{
+	clock(CLOCK_START);
+	for(uint8_t i = 0; i < 10; i++){
+	  UpdataMux();
+	  sample_flag = 0;
+	}
+	UpdataData();
+	mux_value = median_filter(mux_value_raw);
+	parallel_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
+	control_flag = 0;
+	clock(CLOCK_STOP);
+}
+
+// @brief 控制时钟中断
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	static uint16_t times = 0;
 	if (htim == &htim2) {
-		uint16_t mux_value;
-		int n;
-		float gyro_z;
-		float left_encoder_speed;   
-		float right_encoder_speed;  
-		MUX_get_value(&mux_value);
-			
-		// 读取陿螺仪数据
-		dodo_BMI270_get_data();
-		gyro_z = BMI270_gyro_transition(BMI270_gyro_z);
-		//printf("%f\r\n",gyro_z);    
-		// 读取编码器鿟度
-		left_encoder_speed = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
-	//	printf("l=%f\n",left_encoder_speed);
-		__HAL_TIM_SET_COUNTER(&htim4, 0);
-		right_encoder_speed = -1 * (int16_t)__HAL_TIM_GET_COUNTER(&htim3);
-	//	printf("r=%f\n",right_encoder_speed);
-		__HAL_TIM_SET_COUNTER(&htim3, 0);
-		// 执行串级PID控制
-		master_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
+		times++;
+		sample_flag = 1;
+		if(times >= 4000){
+			times = 0;
+			print_flag = 1;
+		}
 	}
 }
 /* USER CODE END 0 */
@@ -174,26 +204,43 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-//	HAL_Delay(1000);
 	dodo_BMI270_init();//初始化陀螺仪
 	HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
 	HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-	HAL_TIM_Base_Start_IT(&htim2);
-	//TIM2->ARR = 999;
   /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+    HAL_Delay(500);
+	TIM2->ARR = 99;
+	  motor_Init();
+	  clock_Init();
+	HAL_TIM_Base_Start_IT(&htim2);
+//    CeShi();
+//  printf("%f\n",3.3);
   while (1)
   {
-//	if(run_times>5000){
-//		HAL_TIM_Base_Stop_IT(&htim2);
-//		HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_1);
-//	}
-	printf("111");
     /* USER CODE END WHILE */
+	  	if(sample_flag){
+			sample_flag = 0;
+			UpdataMux();
+		}
+
+		if(control_flag){
+			control_flag = 0;
+			UpdataData();
+			mux_value = median_filter(mux_value_raw);
+			parallel_pid_control(mux_value, gyro_z, left_encoder_speed, right_encoder_speed);
+		}
+		
+		if(print_flag){
+			print_flag = 0;
+			
+//			printf("%d\n",printdata[0]);
+		}
     /* USER CODE BEGIN 3 */
+
   }
   /* USER CODE END 3 */
 }
@@ -517,7 +564,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 9600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;

@@ -1,7 +1,8 @@
-/**
- * @file motor_control.h
- * @brief 电机控制头文件
- */
+/*******************************************************************************
+ * 文件名: motor_control.h
+ * 描述: 控制函数头文件
+ ******************************************************************************/
+
 
 #ifndef MOTOR_CONTROL_H
 #define MOTOR_CONTROL_H
@@ -12,21 +13,35 @@
 #include "multiplexer.h"//多路复用器驱动，用于读取光电管读敿
 #include "my_math.h"
 #include "motor_control.h"
+#include "AssistFunction.h"
+#include "PID.h"
+
 /* 外部接口函数 */
 
-void cascade_pid_control(uint16_t mux_value, float gyro_z, float left_encoder, float right_encoder);
+void motor_Init(void);
 void parallel_pid_control(uint16_t mux_value, float gyro_z, float left_encoder, float right_encoder);
-void master_pid_control(uint16_t mux_value, float gyro_z, float left_encoder, float right_encoder);
+
+/* ==================== 数据结构 ==================== */
+
+// 电机控制结构体
+typedef struct {
+    float target_speed;
+    float current_speed;
+    PID_Controller_t speed_pid;
+    int16_t pwm_output;
+	
+	GPIO_TypeDef* Motor_GPIO;
+	uint16_t Motor_PIN;
+	uint8_t Motor_DIR;
+	uint8_t CCR;
+} Motor_t;
+
+typedef enum{
+	ZhiDao = 0,
+	During_ZhiJiao = 1,
+}Condition_t;
 
 
-void tune_pid_parameters(float steer_kp, float steer_kd,
-                         float gyro_kp, float gyro_ki, float gyro_kd,
-                         float speed_kp, float speed_ki);
-void reset_all_pid(void);
-
-extern int run_times ;			 
-/* 辅助函数 */
-float calculate_line_position(uint16_t mux_value);
-
+extern Condition_t printdata[2];
 #endif // MOTOR_CONTROL_H
 						 
