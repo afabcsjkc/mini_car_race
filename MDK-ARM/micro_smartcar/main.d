@@ -25,4 +25,4 @@ micro_smartcar/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Core\code\dodo_BMI270.h ..\Core\code\bmi270_port.h \
   ..\Core\code\bmi270.h ..\Core\code\bmi2.h ..\Core\code\bmi2_defs.h \
   ..\Core\code\multiplexer.h ..\Core\code\motor_control.h \
-  ..\Core\code\my_math.h
+  ..\Core\code\my_math.h ..\Hardware\AssistFunction.h ..\Hardware\PID.h
